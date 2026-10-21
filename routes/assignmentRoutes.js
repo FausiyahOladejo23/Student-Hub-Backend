@@ -1,0 +1,12 @@
+const router = require('express').Router();
+const { body, param } = require('express-validator');
+const c = require('../controllers/assignmentController');
+const validate = require('../middleware/validate');
+const idRule = param('id').isMongoId().withMessage('Invalid assignment ID.');
+const fields = [body('title').optional().trim().isLength({ min: 1, max: 160 }), body('course').optional().trim().isLength({ min: 1, max: 100 }), body('description').optional().isString().isLength({ max: 3000 }), body('dueDate').optional().isISO8601().withMessage('Due date must be a valid date.'), body('priority').optional().isIn(['low', 'medium', 'high']), body('isCompleted').optional().isBoolean()];
+router.get('/', c.list);
+router.post('/', [body('title').trim().isLength({ min: 1, max: 160 }), body('course').trim().isLength({ min: 1, max: 100 }), body('dueDate').isISO8601().withMessage('A valid due date is required.'), body('description').optional().isString().isLength({ max: 3000 }), body('priority').optional().isIn(['low', 'medium', 'high'])], validate, c.create);
+router.get('/:id', idRule, validate, c.getOne);
+router.patch('/:id', idRule, ...fields, validate, c.update);
+router.delete('/:id', idRule, validate, c.remove);
+module.exports = router;

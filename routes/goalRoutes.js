@@ -1,0 +1,11 @@
+const router = require('express').Router();
+const { body, param } = require('express-validator');
+const c = require('../controllers/goalController');
+const validate = require('../middleware/validate');
+const idRule = param('id').isMongoId().withMessage('Invalid goal ID.');
+const fields = [body('title').optional().trim().isLength({ min: 1, max: 160 }), body('description').optional().isString().isLength({ max: 2000 }), body('targetDate').optional({ nullable: true }).isISO8601(), body('targetHours').optional().isFloat({ min: 0, max: 10000 }), body('completedHours').optional().isFloat({ min: 0, max: 10000 }), body('isCompleted').optional().isBoolean()];
+router.get('/', c.list);
+router.post('/', [body('title').trim().isLength({ min: 1, max: 160 }), body('description').optional().isString().isLength({ max: 2000 }), body('targetDate').optional({ nullable: true }).isISO8601(), body('targetHours').optional().isFloat({ min: 0, max: 10000 }), body('completedHours').optional().isFloat({ min: 0, max: 10000 })], validate, c.create);
+router.patch('/:id', idRule, ...fields, validate, c.update);
+router.delete('/:id', idRule, validate, c.remove);
+module.exports = router;
